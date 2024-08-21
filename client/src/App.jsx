@@ -1,43 +1,120 @@
-import React, { useEffect } from 'react';
-import { useForm } from 'react-hook-form';
-import { useNavigate } from 'react-router-dom';
+import { Transition } from "@headlessui/react";
+import clsx from "clsx";
+import { Fragment, useRef } from "react";
+import { IoClose } from "react-icons/io5";
+import { useDispatch, useSelector } from "react-redux";
+import { Navigate, Outlet, Route, Routes, useLocation } from "react-router-dom";
+import { Toaster } from "sonner";
 
-const Login = () => {
-  const {
-    register,
-    handleSubmit,
-    formState: { errors }, // Correctly destructuring errors from formState
-  } = useForm();
+import Navbar from "./components/Navbar";
+import Sidebar from "./components/Sidebar";
+import Login from "./pages/Login";
+import TaskDetails from "./pages/TaskDetails";
+import Tasks from "./pages/Tasks";
+import Trash from "./pages/Trash";
+import Users from "./pages/Users";
+import Dashboard from "./pages/dashboard";
+import { setOpenSidebar } from "./redux/slices/authSlice";
+function Layout() {
+  //const { user } = useSelector((state) => state.auth);
+  const user = true
+  const location = useLocation();
 
-  const navigate = useNavigate();
+  return user ? (
+    <div className='w-full h-screen flex flex-col md:flex-row'>
+      <div className='w-1/5 h-screen bg-white sticky top-0 hidden md:block'>
+        <Sidebar />
+      </div>
+      {/*< MobileSidebar /> */}
 
-  const user = false; // For demonstration, replace with actual user authentication logic
+      <div className='flex-1 overflow-y-auto'>
+        <Navbar /> 
 
-  useEffect(() => {
-    if (user) {
-      navigate('/dashboard');
-    }
-  }, [user, navigate]);
-
-  return (
-    <div className="w-full min-h-screen flex items-center justify-center flex-col lg:flex-row bg-[#f3f4f6]">
-      <div className="w-full md:w-auto flex gap-0 md:gap-40 flex-col md:flex-row items-center justify-center">
-        <div className="h-full w-full lg:w-2/3 flex flex-col items-center justify-center">
-          <div className="w-full md:max-w-lg 2xl:max-w-3xl flex flex-col items-center justify-center gap-5 md:gap-y-10 2xl:mt-20">
-            <span className="flex gap-1 py-1 px-3 border rounded-full text-sm md:text-base border-gray-300 text-gray-600">
-              Manage all your tasks in one tab
-            </span>
-            <p className='flex flex-col ga[-0 md:gap-4 text-4xl md:text-6xl 2xl:text-7xl font-black text-center text-blue-700'>
-              <span> Cloud-Based Task Manager</span>
-            </p>
-            <div className='cell'>
-              <div className='circle rotate-in-up-left'></div>
-            </div>
-          </div>
+        <div className='p-4 2xl:px-10'>
+          <Outlet />
         </div>
       </div>
-    </div>
-  );
-};
 
-export default Login;
+    </div>
+  ) : (
+    <Navigate to='/log-in' state={{ from: location }} replace />
+  );
+}
+
+const MobileSidebar = () => {
+  const { isSidebarOpen } = useSelector((state) => state.auth);
+  const mobileMenuRef = useRef(null)
+  const dispatch = useDispatch()
+  const closeSidebar = () => {
+    dispatch(setOpenSidebar(false));
+  }
+  return (
+    <>
+      <Transition
+        show={isSidebarOpen}
+        as={Fragment}
+        enter='transition-opacity duration-700'
+        enterFrom='opacity-x-10'
+        enterTo='opacity-x-100'
+        leave='transition-opacity duration-700'
+        leaveFrom='opacity-x-100'
+        leaveTo='opacity-x-0'
+      >
+        {(ref) => (
+          <div ref={(node) => (mobileMenuRef.current = node)}
+          className={clsx("md:hidden w-full h-full bg-black/40 transition-all duration-700 transform",
+          isSidebarOpen ? "translate-x-0" : "translate-x-full")}
+          onClick={()=>closeSidebar()}
+          >
+            <div className="bg-white w-2/4 h-full">
+              <div className="w-full flex justify-end px-5 mt-5">
+                <button onClick={()=>closeSidebar()}
+                  className="flex justify-end items-end"
+                  >
+                    <IoClose size = {25}/>
+
+                </button>
+
+              </div>
+
+              <div className="-mt-10">
+                <Sidebar/>
+
+              </div>
+
+            </div>
+
+          </div>
+        )}
+      </Transition>
+    </>
+  )
+}
+
+
+
+function App() {
+  return (
+    <main className='w-full min-h-screen bg-[#f3f4f6] '>
+      <Routes>
+        <Route element={<Layout />}>
+          <Route index path='/' element={<Navigate to='/dashboard' />} />
+          <Route path='/dashboard' element={<Dashboard />} />
+          <Route path='/tasks' element={<Tasks />} />
+          <Route path='/completed/:status' element={<Tasks />} />
+          <Route path='/in-progress/:status' element={<Tasks />} />
+          <Route path='/todo/:status' element={<Tasks />} />
+          <Route path='/team' element={<Users />} />
+          <Route path='/trashed' element={<Trash />} />
+          <Route path='/task/:id' element={<TaskDetails />} />
+        </Route>
+
+        <Route path='/log-in' element={<Login />} />
+      </Routes>
+
+      <Toaster richColors />
+    </main>
+  );
+}
+
+export default App;
