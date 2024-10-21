@@ -8,6 +8,7 @@ import Button from '../components/Button';
 import Tabs from '../components/Tabs';
 import TaskTitle from '../components/Tasktitle';
 import Table from '../components/task/Table';
+import AddTask from '../components/task/AddTask';
 import BoardView from '../components/BoardView';
 import { IoMdAdd } from 'react-icons/io';
 import { tasks } from '../assets/data';
@@ -66,6 +67,7 @@ const Tasks = () => {
           </div>
         )}
         </Tabs>
+        <AddTask open={open} setOpen={setOpen}/>
       </div>
 
 

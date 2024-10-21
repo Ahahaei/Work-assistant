@@ -7,6 +7,8 @@ import UserAvatar from './UserAvatar'
 const Navbar = () => {
     const { user } = useSelector((state) => state.auth);
     const dispatch = useDispatch();
+    const isSidebarOpen = useSelector((state) => state.auth.isSidebarOpen); // Accessing the Redux state
+    console.log(isSidebarOpen);
   return (
     <div className='flex items-center justify-between bg-white px-4 py-3 2xl:py-4 sticky z-10 top-0'>
       <div className='flex gap-4 items-center'>
